@@ -1,5 +1,30 @@
 # 3d2png
 
+Update with three.js 162. The last Version of three.js with support of for WebGL 1. The software 3d2png depends on headless-gl, which only supports WebGL 1.
+
+**TODO for Patch: The lights need to be revised. Standard light system RoomEnvironment is not working with headless rendering.**
+
+Test: node --inspect 3d2png.js samples/DavidStatue.stl 640x480 test.png
+
+![DavidV88](samples/DavidStatue.png)
+
+Rendering of the image with the old lightning system of v88.
+
+No lights after the update to v162. Lightning system changed with v152.
+
+![DavidV162](samples/DavidStatue_directional_light.png)
+
+Rendering of the image with v162 and DirectionLight instead of SpotLight.
+
+![DavidV162](samples/DavidStatue_room_environment.PNG)
+
+Rendering of the image with v162 and Standard light system RoomEnvironment in the new 3D Extension: https://opendem.github.io/WikiMediaExtension3D_Test_GLB_Format/
+
+**The code must be adapted to come close to the standard RoomEnvirnment lighting system.**
+
+
+## How to build 3d2png-deploy
+
 Simple thumbnail generator for AMF and STL files. It tries to pick a reasonable
 camera position based on the bounding box of the geometry.
 
