@@ -2,7 +2,7 @@
 
 Update with three.js 162. The last Version of three.js with support of for WebGL 1. The software 3d2png depends on headless-gl, which only supports WebGL 1.
 
-**TODO for Patch: The lights need to be revised. Standard light system RoomEnvironment is not working with headless rendering.**
+**Remarks: Standard light system RoomEnvironment is not working with headless rendering. The patch of PMREMGenerator to get RoomEnvironment to work did not work for all systems. An attempt was made here to imitate RoomEnvironment with classic lights. It must be checked whether this is sufficient. **
 
 Test: node --inspect 3d2png.js samples/DavidStatue.stl 640x480 test.png
 
@@ -12,15 +12,13 @@ Rendering of the image with the old lightning system of v88.
 
 No lights after the update to v162. Lightning system changed with v152.
 
-![DavidV162](samples/DavidStatue_directional_light.png)
+![DavidV162](samples/DavidStatue_room_environment_like.png)
 
-Rendering of the image with v162 and DirectionLight instead of SpotLight.
+Rendering of the image with v162 and adapted light system to mimic RoomEnvironment.
 
 ![DavidV162](samples/DavidStatue_room_environment.PNG)
 
 Rendering of the image with v162 and Standard light system RoomEnvironment in the new 3D Extension: https://opendem.github.io/WikiMediaExtension3D_Test_GLB_Format/
-
-**The code must be adapted to come close to the standard RoomEnvirnment lighting system.**
 
 
 ## How to build 3d2png-deploy
