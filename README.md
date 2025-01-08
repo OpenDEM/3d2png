@@ -2,7 +2,7 @@
 
 Update with three.js 162. The last Version of three.js with support of for WebGL 1. The software 3d2png depends on headless-gl, which only supports WebGL 1.
 
-**Remarks: Standard light system RoomEnvironment is not working with headless rendering. The patch of PMREMGenerator to get RoomEnvironment to work did not work for all systems. An attempt was made here to imitate RoomEnvironment with classic lights. It must be checked whether this is sufficient. **
+**Remarks: Standard light system RoomEnvironment is not working with headless rendering. The patch of PMREMGenerator to get RoomEnvironment to work did not work for all systems. An attempt was made here to imitate RoomEnvironment with classic lights. It must be checked whether this is sufficient.**
 
 Test: node --inspect 3d2png.js samples/DavidStatue.stl 640x480 test.png
 
