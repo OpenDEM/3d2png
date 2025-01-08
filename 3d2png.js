@@ -1,19 +1,13 @@
 #!/usr/bin/env node
 
-/*
-var THREE = require( 'three' ),
-	GL = require( 'gl' ),
-	fs = require( 'fs' ),
-	yargs = require( 'yargs' ),
-	STLLoader = require( './three-stl-loader.js' )( THREE ),
-	polyfills = require( './polyfills.js' );
-*/
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { createRequire } from 'module';
+import polyfills from './polyfills.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { PMREMGenerator } from './PMREMGenerator.js';
 
 // Setup require for packages that don't support ESM
 const require = createRequire(import.meta.url);
@@ -24,26 +18,15 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 const { createCanvas } = require('canvas');
-//const polyfills = require('./polyfills.js');
 
 
-// For local files, you have two options:
+function createAreaLightMaterial(intensity) {
 
-// Option 1: Convert polyfills.js to ESM and use import
-import polyfills from './polyfills.js';
+	const material = new THREE.MeshBasicMaterial();
+	material.color.setScalar(intensity);
+	return material;
 
-// Option 2: Keep polyfills.js as CommonJS and use require
-//const polyfills = require('./polyfills.js')
-
-
-
-// const { createCanvas, Canvas } = require('canvas')
-
-/*
-for (item in polyfills) {
-	global[item] = polyfills[item];
 }
-*/
 
 /**
  * Converts 3D files to PNG images
@@ -82,26 +65,50 @@ function ThreeDtoPNG(width, height) {
 		alpha: true
 	});
 
-	// new
+
 	// RoomEnvironment is not directly available in headless Node.js environment because it relies on WebGL features that aren't fully supported in node-gl.
 
-	//const environment = new THREE.RoomEnvironment( this.renderer );
-	//const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
-
+	// does not work as expected
+	/*
+	const environment = new RoomEnvironment(this.renderer);
+	const pmremGenerator = new PMREMGenerator(this.renderer);
+	this.scene = new THREE.Scene();
+	this.scene.environment = pmremGenerator.fromScene(environment).texture;	
+	environment.dispose();
+	pmremGenerator.dispose();
+	*/
+	
 	this.scene = new THREE.Scene();
 
-	// new
-	//	this.scene.background = new THREE.Color( 0x0000000 );
-	//	this.scene.environment = pmremGenerator.fromScene( environment ).texture;
-	//	environment.dispose();
+	// Attempt to approach RoomEnvironment with the means of classical lighting.
 
+	// Bright ambient light
+	const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+	this.scene.add(ambientLight);
+		
+    // multiple directionalLights
+	const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2.0);
+	directionalLight1.position.set(5, 5, 5);
+	this.scene.add(directionalLight1);
+		
+	const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+	directionalLight2.position.set(-5, 5, -5);
+	this.scene.add(directionalLight2);
+	
+	const directionalLight3 = new THREE.DirectionalLight(0xffffff, 2.0);
+	directionalLight3.position.set(0, 0, 5);
+	this.scene.add(directionalLight3);
+		
+	// Bright hemisphere light
+	const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+	this.scene.add(hemisphereLight);		
+		
 }
 
 /**
- * Sets up the Three environment (ambient light, camera, renderer)
+ * Sets up the Three environment (camera, renderer)
  */
 ThreeDtoPNG.prototype.setupEnvironment = function () {
-	var light;
 
 	// Add event listeners to canvas
 	if (!this.canvas.addEventListener) {
@@ -114,32 +121,13 @@ ThreeDtoPNG.prototype.setupEnvironment = function () {
 			// Stub implementation
 		};
 	}
-
+	
 	this.renderer.setClearColor(0x222222);
 	this.renderer.setSize(this.width, this.height, false);
 	this.renderer.shadowMap.enabled = true;
 
-
 	this.camera.up.set(0, 0, 1);
-	this.camera.add(new THREE.PointLight(0xffffff, 0.3));
-
-	this.scene.add(new THREE.AmbientLight(0x666666, 0.5));
 	this.scene.add(this.camera);
-
-	const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
-	directionalLight.position.set(-100, 50, 25);
-	directionalLight.castShadow = true;
-	this.scene.add(directionalLight);
-
-	// old with spotlight
-	/*
-	light = new THREE.SpotLight( 0x999999, 1 );
-	light.position.set( -100, 50, 25 );
-	light.castShadow = true;
-	light.shadow.mapSize.width = 4096;
-	light.shadow.mapSize.height = 4096;
-	this.camera.add( light );
-	*/
 
 	this.render();
 };
@@ -150,15 +138,16 @@ ThreeDtoPNG.prototype.setupEnvironment = function () {
  * @returns {THREE.Mesh} mesh
  */
 ThreeDtoPNG.prototype.outputToObject = function (geometry) {
-	// old
-	//	var material = new THREE.MeshPhongMaterial( { color: 0xf0ebe8, shininess: 5, flatShading: true, side: THREE.DoubleSide } );
-	var material = new THREE.MeshPhongMaterial({
+
+	var material = new THREE.MeshStandardMaterial({
 		color: 0xf0ebe8,
-		shininess: 5,
+		roughness: 1,
+		metalness: 0,
 		flatShading: true,
 		side: THREE.DoubleSide,
 		shadowSide: THREE.BackSide // for better shadow handling
 	});
+
 	return new THREE.Mesh(geometry, material);
 };
 
